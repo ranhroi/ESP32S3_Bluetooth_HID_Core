@@ -1,0 +1,37 @@
+name: Compile ESP32-S3 Ble HID Core
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  compile:
+    name: Build firmware for ESP32-S3
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Compile Arduino Sketch
+        uses: arduino/compile-sketches@v1
+        with:
+          fqbn: esp32:esp32:esp32s3
+          platforms: |
+            - name: esp32:esp32
+              version: "3.0.7"
+              source-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+          libraries: |
+            - name: NimBLE-Arduino
+          sketch-paths: |
+            - .
+          cli-compile-flags: |
+            --output-dir ${{ runner.temp }}/output
+            --export-binaries
+
+      - name: Upload compiled firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: esp32s3-firmware
+          path: ${{ runner.temp }}/output/*.bin
